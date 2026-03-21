@@ -1,0 +1,332 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f7fb;
+    color: #101828;
+}
+
+.app-container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 24px 16px 40px;
+}
+
+.header {
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    margin: 0 0 8px;
+    font-size: 34px;
+}
+
+.subtitle {
+    margin: 0;
+    color: #667085;
+}
+
+.main-content {
+    display: grid;
+    gap: 20px;
+}
+
+.form-card,
+.results-section {
+    background: #fff;
+    border: 1px solid #e4e7ec;
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.form-field + .form-field {
+    margin-top: 14px;
+}
+
+.form-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.form-field input[type="file"],
+.form-field input[type="text"] {
+    width: 100%;
+    border: 1px solid #d0d5dd;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+.help-text {
+    margin-top: 6px;
+    color: #667085;
+    font-size: 12px;
+}
+
+.action-buttons {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-primary {
+    background: #4f46e5;
+    color: #fff;
+}
+
+.btn-outline,
+.btn-text {
+    background: #fff;
+    border-color: #d0d5dd;
+    color: #344054;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.empty-state {
+    border: 1px dashed #d0d5dd;
+    border-radius: 12px;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #667085;
+}
+
+.error-message {
+    margin-top: 12px;
+    background: #fef3f2;
+    color: #b42318;
+    border: 1px solid #fecdca;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.result-card {
+    background: #fff;
+    border: 1px solid #e4e7ec;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+    overflow: hidden;
+}
+
+.result-card.profile { border-left: 6px solid #5b5bd6; }
+.result-card.jobs { border-left: 6px solid #22c55e; }
+.result-card.gaps { border-left: 6px solid #f59e0b; }
+.result-card.plan { border-left: 6px solid #ec4899; }
+
+.result-card-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid #e4e7ec;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+}
+
+.result-card-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.result-card-body {
+    padding: 22px;
+}
+
+.profile-top h4 {
+    margin: 0 0 8px;
+    font-size: 28px;
+}
+
+.profile-headline {
+    margin: 0 0 14px;
+    color: #475467;
+    line-height: 1.7;
+}
+
+.meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.meta-pill,
+.skill-tag,
+.job-skill-tag,
+.gap-tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.meta-pill {
+    background: #f2f4f7;
+    color: #344054;
+}
+
+.section-block + .section-block {
+    margin-top: 24px;
+}
+
+.section-title {
+    margin: 0 0 14px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.tag-list,
+.job-skill-list,
+.gap-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.skill-tag {
+    background: #eef0ff;
+    color: #3f3fb8;
+}
+
+.timeline-list,
+.job-list,
+.phase-list {
+    display: grid;
+    gap: 14px;
+}
+
+.timeline-item,
+.job-item,
+.phase-item {
+    border: 1px solid #e4e7ec;
+    border-radius: 16px;
+    padding: 16px;
+    background: #fcfcfd;
+}
+
+.timeline-main,
+.job-main {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.timeline-title,
+.job-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.timeline-subtitle,
+.job-desc {
+    margin-top: 6px;
+    color: #667085;
+    line-height: 1.55;
+    font-size: 14px;
+}
+
+.timeline-date,
+.job-score {
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 700;
+    color: #4338ca;
+    background: #eef2ff;
+    border-radius: 999px;
+    padding: 6px 10px;
+}
+
+.job-score {
+    background: #ecfdf3;
+    color: #067647;
+}
+
+.job-skill-tag {
+    background: #eef2ff;
+    color: #3730a3;
+}
+
+.gap-tag.matched {
+    background: #ecfdf3;
+    color: #067647;
+}
+
+.gap-tag.missing {
+    background: #fff7ed;
+    color: #b54708;
+}
+
+.phase-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.phase-name {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.phase-weeks {
+    font-size: 13px;
+    font-weight: 700;
+    color: #9e174d;
+    background: #fdf2f8;
+    padding: 6px 10px;
+    border-radius: 999px;
+}
+
+.phase-block {
+    margin-top: 12px;
+}
+
+.phase-block strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.phase-block ul,
+.bullet-block ul {
+    margin: 0;
+    padding-left: 18px;
+    color: #475467;
+    line-height: 1.7;
+}
