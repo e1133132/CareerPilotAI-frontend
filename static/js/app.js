@@ -227,6 +227,8 @@ function renderStudyPlanCard(plan) {
   const phases = plan.phases || [];
   const prep = plan.interview_prep || [];
   const tips = plan.portfolio_tips || [];
+  const resources = Array.isArray(plan.resources) ? plan.resources : [];
+  const extraSuggestions = Array.isArray(plan.resource_suggestions) ? plan.resource_suggestions : [];
 
   return `
     <div class="result-card plan">
@@ -238,6 +240,52 @@ function renderStudyPlanCard(plan) {
         <div class="meta-row">
           <span class="meta-pill">${escapeHtml(String(plan.timeline_weeks || 0))} weeks</span>
         </div>
+
+        ${resources.length ? `
+        <div class="section-block">
+          <h5 class="section-title">Learning resources (RAG)</h5>
+          <div class="phase-list">
+            ${resources.map(r => `
+              <div class="phase-item">
+                <div class="phase-header">
+                  <h6 class="phase-name">${escapeHtml(r.title || r.id || "Resource")}</h6>
+                  ${r.relevance_score != null ? `<span class="phase-weeks">score ${Number(r.relevance_score).toFixed(3)}</span>` : ""}
+                </div>
+                ${(r.focus_skills || []).length ? `
+                  <div class="phase-block">
+                    <strong>Skills</strong>
+                    <div class="tag-list">
+                      ${(r.focus_skills || []).map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join("")}
+                    </div>
+                  </div>
+                ` : ""}
+                ${r.summary ? `<div class="phase-block"><strong>Summary</strong><p class="timeline-subtitle">${escapeHtml(r.summary)}</p></div>` : ""}
+                ${(r.resource_hints || []).length ? `
+                  <div class="phase-block">
+                    <strong>Resource hints</strong>
+                    <ul>${(r.resource_hints || []).map(h => `<li>${escapeHtml(h)}</li>`).join("")}</ul>
+                  </div>
+                ` : ""}
+              </div>
+            `).join("")}
+          </div>
+        </div>
+        ` : ""}
+
+        ${extraSuggestions.length ? `
+        <div class="section-block">
+          <h5 class="section-title">Extra suggestions (model)</h5>
+          <ul>
+            ${extraSuggestions.map(s => `
+              <li>
+                <strong>${escapeHtml(s.title || "")}</strong>
+                ${s.notes ? ` — ${escapeHtml(s.notes)}` : ""}
+                ${(s.focus_skills || []).length ? ` (${(s.focus_skills || []).map(escapeHtml).join(", ")})` : ""}
+              </li>
+            `).join("")}
+          </ul>
+        </div>
+        ` : ""}
 
         <div class="section-block">
           <h5 class="section-title">Phases</h5>
