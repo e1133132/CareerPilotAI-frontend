@@ -9,6 +9,10 @@ const resultsList = document.getElementById("resultsList");
 const emptyState = document.getElementById("emptyState");
 const errorMessage = document.getElementById("errorMessage");
 
+let currentRunId = null;
+let planPollTimer = null;
+let lastResultData = null;
+
 resumeFile.addEventListener("change", () => {
   runBtn.disabled = !resumeFile.files.length;
 });
@@ -30,11 +34,12 @@ runBtn.addEventListener("click", async () => {
   runBtn.textContent = "Running...";
 
   try {
+    stopPlanPolling();
     const formData = new FormData();
     formData.append("resume_file", resumeFile.files[0]);
     formData.append("target_roles", targetRoles.value || "");
 
-    const res = await fetch("/api/careerpilot/run", {
+    const res = await fetch("/api/careerpilot/run_partial", {
       method: "POST",
       body: formData
     });
@@ -45,7 +50,12 @@ runBtn.addEventListener("click", async () => {
       throw new Error(data.error || data.detail || "Request failed");
     }
 
-    renderResults(data);
+    lastResultData = data;
+    currentRunId = data.run_id || null;
+    renderResults(lastResultData);
+    if (currentRunId && data.plan_status === "pending") {
+      startPlanPolling(currentRunId);
+    }
   } catch (err) {
     errorMessage.textContent = err.message || "Something went wrong";
     errorMessage.style.display = "block";
@@ -56,6 +66,7 @@ runBtn.addEventListener("click", async () => {
 });
 
 function clearResults() {
+  stopPlanPolling();
   resultsList.innerHTML = "";
   emptyState.style.display = "block";
   clearResultsBtn.style.display = "none";
@@ -70,7 +81,7 @@ function renderResults(data) {
     ${renderProfileCard(data.candidate_profile || {})}
     ${renderJobsCard(data.recommended_jobs || [])}
     ${renderSkillGapsCard(data.skill_gaps || {})}
-    ${renderStudyPlanCard(data.study_plan || {})}
+    ${renderStudyPlanCard(data.study_plan || null, data.plan_status || "")}
   `;
 }
 
@@ -223,7 +234,24 @@ function renderSkillGapsCard(gaps) {
   `;
 }
 
-function renderStudyPlanCard(plan) {
+function renderStudyPlanCard(plan, planStatus) {
+  if (!plan || planStatus === "pending") {
+    return `
+      <div class="result-card plan">
+        <div class="result-card-header">
+          <span>📚</span>
+          <h3>Study Plan</h3>
+        </div>
+        <div class="result-card-body">
+          <div class="meta-row">
+            <span class="meta-pill">Generating…</span>
+          </div>
+          <p class="timeline-subtitle">We’re building your study plan. This section will update automatically when ready.</p>
+        </div>
+      </div>
+    `;
+  }
+
   const phases = plan.phases || [];
   const prep = plan.interview_prep || [];
   const tips = plan.portfolio_tips || [];
@@ -340,6 +368,38 @@ function renderStudyPlanCard(plan) {
       </div>
     </div>
   `;
+}
+
+function startPlanPolling(runId) {
+  stopPlanPolling();
+  planPollTimer = setInterval(async () => {
+    try {
+      const res = await fetch(`/api/careerpilot/result/${encodeURIComponent(runId)}`);
+      const data = await res.json();
+      if (!res.ok) return;
+      if (!data || data.ok !== true) return;
+
+      // Update only when plan is ready.
+      if (data.plan_status === "done" && data.study_plan) {
+        lastResultData = { ...(lastResultData || {}), ...data };
+        renderResults(lastResultData);
+        stopPlanPolling();
+      } else if (data.plan_status === "error") {
+        // Stop polling on error; keep partial results.
+        stopPlanPolling();
+      }
+    } catch (_) {
+      // Ignore transient polling errors.
+    }
+  }, 1500);
+}
+
+function stopPlanPolling() {
+  if (planPollTimer) {
+    clearInterval(planPollTimer);
+    planPollTimer = null;
+  }
+  currentRunId = null;
 }
 
 function dedupe(arr) {
