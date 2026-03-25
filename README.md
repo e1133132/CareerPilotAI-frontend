@@ -20,8 +20,16 @@ Set values in environment variables or `config.py`:
 2. Start frontend:
 
 ```sh
-cd llm-frontend-python
+cd CareerPilotAI-frontend
 python app.py
 ```
 
 3. Open [http://localhost:5000](http://localhost:5000)
+
+## Test
+
+```sh
+cd CareerPilotAI-frontend
+pip install pytest
+pytest
+```

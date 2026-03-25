@@ -30,7 +30,7 @@ def run_careerpilot():
     data = {"target_roles": (request.form.get("target_roles") or "").strip()}
 
     try:
-        resp = requests.post(target_url, files=files, data=data, timeout=120)
+        resp = requests.post(target_url, files=files, data=data, timeout=180)
         try:
             return jsonify(resp.json()), resp.status_code
         except ValueError:
