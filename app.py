@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import requests
 from flask import Flask, jsonify, render_template, request
 
@@ -97,4 +98,5 @@ def careerpilot_result(run_id: str):
         return jsonify({"ok": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=FLASK_PORT, debug=DEBUG)
+    port = int(os.environ.get("PORT", FLASK_PORT))
+    app.run(host='0.0.0.0', port=port, debug=DEBUG)
