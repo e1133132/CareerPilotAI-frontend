@@ -3,7 +3,8 @@
 This is a Flask frontend gateway for CareerPilot.
 
 - Serves the UI page at `/`
-- Proxies `POST /api/careerpilot/run` to `${BACKEND_URL}/api/careerpilot/run`
+- Proxies `POST /api/careerpilot/run`, `POST /api/careerpilot/run_partial`, and `GET /api/careerpilot/result/<run_id>` to the backend
+- Results include **How We Analyzed This** from the API `explainability.pipeline_trace` (and `full_state` as fallback). `fallback_events` and `limitations` are not shown in the UI.
 - Keeps frontend and backend fully separated (no direct Python import from backend code)
 
 ## Config

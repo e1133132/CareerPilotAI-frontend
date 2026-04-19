@@ -81,7 +81,150 @@ function renderResults(data) {
     ${renderProfileCard(data.candidate_profile || {})}
     ${renderJobsCard(data.recommended_jobs || [])}
     ${renderSkillGapsCard(data.skill_gaps || {})}
+    ${renderExplainabilityCard(resolveExplainability(data), data.plan_status || "")}
     ${renderStudyPlanCard(data.study_plan || null, data.plan_status || "")}
+  `;
+}
+
+/**
+ * Merge pipeline_trace from explainability with full_state (run_partial); handle older backends.
+ * Fallback events and limitations are not shown in the UI (API may still return them).
+ */
+function resolveExplainability(data) {
+  const raw = data.explainability;
+  const fs = data.full_state;
+
+  let trace = [];
+
+  if (raw && typeof raw === "object" && Array.isArray(raw.pipeline_trace)) {
+    trace = raw.pipeline_trace;
+  }
+
+  if (!trace.length && fs && typeof fs === "object" && Array.isArray(fs.pipeline_trace) && fs.pipeline_trace.length) {
+    trace = fs.pipeline_trace;
+  }
+
+  const backendSentExplainability = data.explainability !== undefined && data.explainability !== null;
+  const showMissingBackendHint = trace.length === 0 && !backendSentExplainability;
+
+  return {
+    pipeline_trace: trace,
+    showMissingBackendHint
+  };
+}
+
+/** Map internal state keys to user-facing labels (not raw snake_case). */
+const OUTPUT_KEY_LABELS = {
+  candidate_profile: "Candidate profile",
+  resume_evidence: "Resume evidence",
+  job_matches: "Recommended jobs",
+  skill_gaps: "Skill gaps",
+  study_plan: "Study plan",
+  messages: "Messages"
+};
+
+function humanizeOutputKey(key) {
+  const k = String(key ?? "").trim();
+  if (!k) return "";
+  if (OUTPUT_KEY_LABELS[k]) return OUTPUT_KEY_LABELS[k];
+  return k
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (ch) => ch.toUpperCase());
+}
+
+const AGENT_LABELS = {
+  resume_analysis: "Resume analysis",
+  job_matching: "Job matching",
+  skill_gap: "Skill gap analysis",
+  study_planning: "Study planning"
+};
+
+function humanizeAgentName(agentId) {
+  const a = String(agentId ?? "").trim();
+  if (!a) return "";
+  if (AGENT_LABELS[a]) return AGENT_LABELS[a];
+  return a
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (ch) => ch.toUpperCase());
+}
+
+function renderExplainabilityCard(resolved, planStatus) {
+  const stageLabel = (s) => {
+    const m = {
+      intake: "Intake",
+      resume: "Resume",
+      match: "Match",
+      gap: "Gaps",
+      plan: "Plan",
+      done: "Done"
+    };
+    return m[s] || s || "—";
+  };
+
+  if (resolved.showMissingBackendHint) {
+    return `
+    <div class="result-card explain">
+      <div class="result-card-header">
+        <span>🔍</span>
+        <h3>How We Analyzed This</h3>
+      </div>
+      <div class="result-card-body">
+        <p class="explain-empty-message">No analysis steps are available yet. Make sure the CareerPilot backend is up to date and the Flask app points to it (BACKEND_URL), then try again.</p>
+      </div>
+    </div>
+  `;
+  }
+
+  const trace = resolved.pipeline_trace || [];
+
+  const pendingHint =
+    planStatus === "pending"
+      ? `<p class="explain-pending-hint">Study plan is still generating; the trace will include the planning step when ready.</p>`
+      : "";
+
+  const traceHtml = trace.length
+    ? trace
+        .map((step, i) => {
+          const keysRaw = Array.isArray(step.output_keys) ? step.output_keys : [];
+          const keys = keysRaw.filter((k) => String(k) !== "messages");
+          const keysHtml = keys.length
+            ? `<div class="trace-keys"><span class="trace-keys-label">This step produced:</span>${keys.map((k) => `<span class="trace-key-pill">${escapeHtml(humanizeOutputKey(k))}</span>`).join("")}</div>`
+            : "";
+          const ms = step.duration_ms != null ? `<span class="trace-meta">${Number(step.duration_ms).toFixed(0)} ms</span>` : "";
+          const ts = step.timestamp ? `<span class="trace-meta">${escapeHtml(step.timestamp)}</span>` : "";
+          const agentLine = humanizeAgentName(step.agent);
+          return `
+            <div class="trace-step">
+              <div class="trace-step-head">
+                <span class="trace-step-num">${i + 1}</span>
+                <div class="trace-step-titles">
+                  <div class="trace-step-title">${escapeHtml(stageLabel(step.stage))}${agentLine ? ` · ${escapeHtml(agentLine)}` : ""}</div>
+                  ${step.summary ? `<div class="trace-step-summary">${escapeHtml(step.summary)}</div>` : ""}
+                </div>
+                <div class="trace-step-meta">${ms}${ts}</div>
+              </div>
+              ${step.rationale ? `<div class="trace-rationale"><strong>Why</strong><p>${escapeHtml(step.rationale)}</p></div>` : ""}
+              ${keysHtml}
+            </div>
+          `;
+        })
+        .join("")
+    : `<p class="timeline-subtitle">No pipeline trace in this response.</p>`;
+
+  return `
+    <div class="result-card explain">
+      <div class="result-card-header">
+        <span>🔍</span>
+        <h3>How We Analyzed This</h3>
+      </div>
+      <div class="result-card-body">
+        ${pendingHint}
+        <div class="section-block">
+          <h5 class="section-title">Pipeline trace</h5>
+          <div class="trace-list">${traceHtml}</div>
+        </div>
+      </div>
+    </div>
   `;
 }
 
