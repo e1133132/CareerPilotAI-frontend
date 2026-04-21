@@ -1,6 +1,8 @@
 renderAppShell();
 
 const resumeFile = document.getElementById("resumeFile");
+const chooseFileBtn = document.getElementById("chooseFileBtn");
+const fileStatus = document.getElementById("fileStatus");
 const targetRoles = document.getElementById("targetRoles");
 const runBtn = document.getElementById("runBtn");
 const clearAllBtn = document.getElementById("clearAllBtn");
@@ -13,14 +15,24 @@ let currentRunId = null;
 let planPollTimer = null;
 let lastResultData = null;
 
+function updateFileStatus() {
+  const file = resumeFile.files && resumeFile.files[0];
+  fileStatus.textContent = file ? file.name : "No file selected";
+  runBtn.disabled = !file;
+}
+
+chooseFileBtn.addEventListener("click", () => {
+  resumeFile.click();
+});
+
 resumeFile.addEventListener("change", () => {
-  runBtn.disabled = !resumeFile.files.length;
+  updateFileStatus();
 });
 
 clearAllBtn.addEventListener("click", () => {
   resumeFile.value = "";
   targetRoles.value = "";
-  runBtn.disabled = true;
+  updateFileStatus();
   clearResults();
 });
 
@@ -577,7 +589,11 @@ function renderAppShell() {
           <div class="form-card">
             <div class="form-field">
               <label for="resumeFile">Resume file (.pdf)</label>
-              <input id="resumeFile" type="file" accept=".pdf,application/pdf" />
+              <div class="file-picker">
+                <input id="resumeFile" class="sr-only-file-input" type="file" accept=".pdf,application/pdf" />
+                <button type="button" class="btn btn-outline" id="chooseFileBtn">Choose file</button>
+                <span id="fileStatus" class="file-status">No file selected</span>
+              </div>
               <div class="help-text">We will extract text from your PDF resume automatically.</div>
             </div>
 
@@ -613,3 +629,5 @@ function renderAppShell() {
     </div>
   `;
 }
+
+updateFileStatus();
