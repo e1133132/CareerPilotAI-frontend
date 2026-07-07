@@ -364,6 +364,7 @@ body::before {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     align-items: start;
+    margin-top: 20px;
 }
 
 .form-fields-row .form-field + .form-field {
