@@ -221,7 +221,10 @@ function boot() {
 const COLLAPSE_STORAGE_KEY = "careerpilot-card-collapsed";
 const DEFAULT_COLLAPSED = {
   summary: false,
-  profile: false,
+  "profile-overview": false,
+  "profile-skills": false,
+  "profile-education": true,
+  "profile-experience": false,
   jobs: true,
   gaps: false,
   resume: false,
@@ -249,9 +252,9 @@ function saveCollapsedState(state) {
   }
 }
 
-function collapsibleCard(id, title, icon, bodyHtml, { collapsed = false, extraClass = "" } = {}) {
+function collapsibleCard(id, title, icon, bodyHtml, { collapsed = false, extraClass = "", layout = "full" } = {}) {
   return `
-    <div class="result-card collapsible ${extraClass}${collapsed ? " is-collapsed" : ""}" data-card-id="${escapeHtml(id)}">
+    <div class="result-card collapsible layout-${layout} ${extraClass}${collapsed ? " is-collapsed" : ""}" data-card-id="${escapeHtml(id)}">
       <button type="button" class="result-card-header collapse-toggle" aria-expanded="${collapsed ? "false" : "true"}">
         <span class="card-icon">${icon}</span>
         <h3>${escapeHtml(title)}</h3>
@@ -494,7 +497,7 @@ function renderResults(data) {
 
   resultsList.innerHTML = `
     ${renderSummaryCard(data)}
-    ${renderProfileCard(data.candidate_profile || {})}
+    ${renderProfileCards(data.candidate_profile || {})}
     ${renderJobsCard(data.recommended_jobs || [], data.session_memory || {})}
     ${renderSkillGapsCard(data.skill_gaps || {})}
     ${renderResumeSuggestionsCard(data.resume_suggestions || null, data.resume_status || "")}
@@ -544,7 +547,7 @@ function renderSummaryCard(data) {
       ${rejectedCount ? `<p class="timeline-subtitle">${rejectedCount} job(s) marked not interested (hidden from future ranking).</p>` : ""}
       ${notes.length ? `<ul class="summary-notes">${notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul>` : `<p class="timeline-subtitle">Supervisor routed the pipeline based on match quality and skill gaps.</p>`}
     `,
-    { collapsed: loadCollapsedState().summary, extraClass: "summary" }
+    { collapsed: loadCollapsedState().summary, extraClass: "summary", layout: "side" }
   );
 }
 
@@ -688,38 +691,68 @@ function renderExplainabilityCard(resolved, planStatus) {
   );
 }
 
-function renderProfileCard(profile) {
-  const skills = dedupe(profile.skills || []).slice(0, 24);
-  const education = profile.education || [];
-  const experience = profile.experience || [];
+function renderProfileCards(profile) {
+  const cards = [
+    renderProfileOverviewCard(profile),
+    renderProfileSkillsCard(profile),
+    renderProfileEducationCard(profile),
+    renderProfileExperienceCard(profile),
+  ].filter(Boolean);
+  return cards.join("");
+}
+
+function renderProfileOverviewCard(profile) {
   const certifications = profile.certifications || [];
   const links = profile.links || [];
 
   return collapsibleCard(
-    "profile",
-    "Candidate Profile",
+    "profile-overview",
+    "Profile Overview",
     "👤",
     `
         <div class="profile-top">
           <h4>${escapeHtml(profile.name || "Candidate")}</h4>
           <p class="profile-headline">${escapeHtml(profile.headline || "")}</p>
           <div class="meta-row">
-            ${links.map(link => `<span class="meta-pill">${escapeHtml(link)}</span>`).join("")}
-            ${certifications.map(cert => `<span class="meta-pill">${escapeHtml(cert)}</span>`).join("")}
+            ${links.map((link) => `<span class="meta-pill">${escapeHtml(link)}</span>`).join("")}
+            ${certifications.map((cert) => `<span class="meta-pill">${escapeHtml(cert)}</span>`).join("")}
           </div>
         </div>
+    `,
+    { collapsed: loadCollapsedState()["profile-overview"], extraClass: "profile profile-overview", layout: "full" }
+  );
+}
 
-        <div class="section-block">
-          <h5 class="section-title">Skills</h5>
-          <div class="tag-list">
-            ${skills.map(skill => `<span class="skill-tag">${escapeHtml(skill)}</span>`).join("")}
-          </div>
+function renderProfileSkillsCard(profile) {
+  const skills = dedupe(profile.skills || []).slice(0, 24);
+  if (!skills.length) return "";
+
+  return collapsibleCard(
+    "profile-skills",
+    "Skills",
+    "🛠",
+    `
+        <div class="tag-list">
+          ${skills.map((skill) => `<span class="skill-tag">${escapeHtml(skill)}</span>`).join("")}
         </div>
+    `,
+    { collapsed: loadCollapsedState()["profile-skills"], extraClass: "profile profile-skills", layout: "full" }
+  );
+}
 
-        <div class="section-block">
-          <h5 class="section-title">Education</h5>
-          <div class="timeline-list">
-            ${education.map(item => `
+function renderProfileEducationCard(profile) {
+  const education = profile.education || [];
+  if (!education.length) return "";
+
+  return collapsibleCard(
+    "profile-education",
+    "Education",
+    "🎓",
+    `
+        <div class="timeline-list">
+          ${education
+            .map(
+              (item) => `
               <div class="timeline-item">
                 <div class="timeline-main">
                   <div>
@@ -729,14 +762,28 @@ function renderProfileCard(profile) {
                   <div class="timeline-date">${escapeHtml(item.dates || "")}</div>
                 </div>
               </div>
-            `).join("")}
-          </div>
+            `
+            )
+            .join("")}
         </div>
+    `,
+    { collapsed: loadCollapsedState()["profile-education"], extraClass: "profile profile-education", layout: "full" }
+  );
+}
 
-        <div class="section-block">
-          <h5 class="section-title">Experience</h5>
-          <div class="timeline-list">
-            ${experience.map(item => `
+function renderProfileExperienceCard(profile) {
+  const experience = profile.experience || [];
+  if (!experience.length) return "";
+
+  return collapsibleCard(
+    "profile-experience",
+    "Experience",
+    "💼",
+    `
+        <div class="timeline-list">
+          ${experience
+            .map(
+              (item) => `
               <div class="timeline-item">
                 <div class="timeline-main">
                   <div>
@@ -745,19 +792,24 @@ function renderProfileCard(profile) {
                   </div>
                   <div class="timeline-date">${escapeHtml(item.dates || "")}</div>
                 </div>
-                ${(item.highlights || []).length ? `
+                ${
+                  (item.highlights || []).length
+                    ? `
                   <div class="bullet-block">
                     <ul>
-                      ${item.highlights.map(h => `<li>${escapeHtml(h)}</li>`).join("")}
+                      ${item.highlights.map((h) => `<li>${escapeHtml(h)}</li>`).join("")}
                     </ul>
                   </div>
-                ` : ""}
+                `
+                    : ""
+                }
               </div>
-            `).join("")}
-          </div>
+            `
+            )
+            .join("")}
         </div>
     `,
-    { collapsed: loadCollapsedState().profile, extraClass: "profile" }
+    { collapsed: loadCollapsedState()["profile-experience"], extraClass: "profile profile-experience", layout: "full" }
   );
 }
 
@@ -1441,18 +1493,20 @@ function renderAppShell() {
             </section>
 
             <section class="panel panel-results">
-              <div class="results-header">
-                <div>
-                  <h2>Results</h2>
-                  <p class="results-sub">Updates appear as each pipeline step completes</p>
+              <div class="results-rail">
+                <div class="results-header">
+                  <div>
+                    <h2>Results</h2>
+                    <p class="results-sub">Updates appear as each pipeline step completes</p>
+                  </div>
+                  <button class="btn btn-text" id="clearResultsBtn" style="display: none;">Clear results</button>
                 </div>
-                <button class="btn btn-text" id="clearResultsBtn" style="display: none;">Clear results</button>
-              </div>
 
-              <div class="empty-state" id="emptyState">
-                <div class="empty-icon-wrap">📄</div>
-                <p>No results yet</p>
-                <span class="empty-hint">Upload a resume and click Run CareerPilot</span>
+                <div class="empty-state" id="emptyState">
+                  <div class="empty-icon-wrap">📄</div>
+                  <p>No results yet</p>
+                  <span class="empty-hint">Upload a resume and click Run CareerPilot</span>
+                </div>
               </div>
 
               <div class="results-list" id="resultsList"></div>

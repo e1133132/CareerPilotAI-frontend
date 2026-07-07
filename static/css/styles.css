@@ -353,9 +353,47 @@ body::before {
     align-items: start;
 }
 
+.panel-input {
+    position: sticky;
+    top: 88px;
+    align-self: start;
+    z-index: 2;
+}
+
+@media (min-width: 901px) {
+    .panel-results {
+        display: contents;
+    }
+
+    .results-rail {
+        grid-column: 2;
+        grid-row: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-width: 0;
+    }
+
+    .results-list {
+        display: contents;
+    }
+
+    .result-card.layout-side {
+        grid-column: 2;
+    }
+
+    .result-card.layout-full {
+        grid-column: 1 / -1;
+    }
+}
+
 @media (max-width: 900px) {
     .main-grid {
         grid-template-columns: 1fr;
+    }
+
+    .panel-input {
+        position: static;
     }
 }
 
@@ -618,7 +656,11 @@ body::before {
 }
 
 .result-card.summary { border-left: 5px solid #6366f1; }
-.result-card.profile { border-left: 5px solid #5b5bd6; }
+.result-card.profile,
+.result-card.profile-overview { border-left: 5px solid #5b5bd6; }
+.result-card.profile-skills { border-left: 5px solid #6366f1; }
+.result-card.profile-education { border-left: 5px solid #818cf8; }
+.result-card.profile-experience { border-left: 5px solid #4f46e5; }
 .result-card.jobs { border-left: 5px solid #22c55e; }
 .result-card.gaps { border-left: 5px solid #f59e0b; }
 .result-card.resume { border-left: 5px solid #8b5cf6; }
