@@ -252,9 +252,9 @@ function saveCollapsedState(state) {
   }
 }
 
-function collapsibleCard(id, title, icon, bodyHtml, { collapsed = false, extraClass = "", layout = "full" } = {}) {
+function collapsibleCard(id, title, icon, bodyHtml, { collapsed = false, extraClass = "" } = {}) {
   return `
-    <div class="result-card collapsible layout-${layout} ${extraClass}${collapsed ? " is-collapsed" : ""}" data-card-id="${escapeHtml(id)}">
+    <div class="result-card collapsible ${extraClass}${collapsed ? " is-collapsed" : ""}" data-card-id="${escapeHtml(id)}">
       <button type="button" class="result-card-header collapse-toggle" aria-expanded="${collapsed ? "false" : "true"}">
         <span class="card-icon">${icon}</span>
         <h3>${escapeHtml(title)}</h3>
@@ -547,7 +547,7 @@ function renderSummaryCard(data) {
       ${rejectedCount ? `<p class="timeline-subtitle">${rejectedCount} job(s) marked not interested (hidden from future ranking).</p>` : ""}
       ${notes.length ? `<ul class="summary-notes">${notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul>` : `<p class="timeline-subtitle">Supervisor routed the pipeline based on match quality and skill gaps.</p>`}
     `,
-    { collapsed: loadCollapsedState().summary, extraClass: "summary", layout: "side" }
+    { collapsed: loadCollapsedState().summary, extraClass: "summary" }
   );
 }
 
@@ -719,7 +719,7 @@ function renderProfileOverviewCard(profile) {
           </div>
         </div>
     `,
-    { collapsed: loadCollapsedState()["profile-overview"], extraClass: "profile profile-overview", layout: "full" }
+    { collapsed: loadCollapsedState()["profile-overview"], extraClass: "profile profile-overview" }
   );
 }
 
@@ -736,7 +736,7 @@ function renderProfileSkillsCard(profile) {
           ${skills.map((skill) => `<span class="skill-tag">${escapeHtml(skill)}</span>`).join("")}
         </div>
     `,
-    { collapsed: loadCollapsedState()["profile-skills"], extraClass: "profile profile-skills", layout: "full" }
+    { collapsed: loadCollapsedState()["profile-skills"], extraClass: "profile profile-skills" }
   );
 }
 
@@ -767,7 +767,7 @@ function renderProfileEducationCard(profile) {
             .join("")}
         </div>
     `,
-    { collapsed: loadCollapsedState()["profile-education"], extraClass: "profile profile-education", layout: "full" }
+    { collapsed: loadCollapsedState()["profile-education"], extraClass: "profile profile-education" }
   );
 }
 
@@ -809,7 +809,7 @@ function renderProfileExperienceCard(profile) {
             .join("")}
         </div>
     `,
-    { collapsed: loadCollapsedState()["profile-experience"], extraClass: "profile profile-experience", layout: "full" }
+    { collapsed: loadCollapsedState()["profile-experience"], extraClass: "profile profile-experience" }
   );
 }
 
@@ -1451,11 +1451,12 @@ function renderAppShell() {
             </div>
           </section>
 
-          <main class="main-grid">
+          <main class="main-stack">
             <section class="panel panel-input">
               <div class="form-card glass">
                 <div class="panel-head">
                   <h2>Get started</h2>
+                  <p>Upload your resume and optional target roles to run the full career pipeline.</p>
                 </div>
 
                 <div class="form-field">
@@ -1472,15 +1473,17 @@ function renderAppShell() {
                   Signed in — preferences and rejected jobs are saved to your account
                 </div>
 
-                <div class="form-field" id="anonymousIdField">
-                  <label for="clientId">Guest ID (optional)</label>
-                  <input id="clientId" type="text" placeholder="When not signed in, e.g. demo-user" />
-                </div>
+                <div class="form-fields-row">
+                  <div class="form-field" id="anonymousIdField">
+                    <label for="clientId">Guest ID (optional)</label>
+                    <input id="clientId" type="text" placeholder="When not signed in, e.g. demo-user" />
+                  </div>
 
-                <div class="form-field">
-                  <label for="targetRoles">Target roles (optional)</label>
-                  <input id="targetRoles" type="text" placeholder="e.g. Data Analyst, Backend Engineer" />
-                  <div class="help-text">Comma-separated</div>
+                  <div class="form-field">
+                    <label for="targetRoles">Target roles (optional)</label>
+                    <input id="targetRoles" type="text" placeholder="e.g. Data Analyst, Backend Engineer" />
+                    <div class="help-text">Comma-separated</div>
+                  </div>
                 </div>
 
                 <div id="errorMessage" class="error-message" style="display: none;"></div>
@@ -1493,20 +1496,18 @@ function renderAppShell() {
             </section>
 
             <section class="panel panel-results">
-              <div class="results-rail">
-                <div class="results-header">
-                  <div>
-                    <h2>Results</h2>
-                    <p class="results-sub">Updates appear as each pipeline step completes</p>
-                  </div>
-                  <button class="btn btn-text" id="clearResultsBtn" style="display: none;">Clear results</button>
+              <div class="results-header">
+                <div>
+                  <h2>Results</h2>
+                  <p class="results-sub">Updates appear as each pipeline step completes</p>
                 </div>
+                <button class="btn btn-text" id="clearResultsBtn" style="display: none;">Clear results</button>
+              </div>
 
-                <div class="empty-state" id="emptyState">
-                  <div class="empty-icon-wrap">📄</div>
-                  <p>No results yet</p>
-                  <span class="empty-hint">Upload a resume and click Run CareerPilot</span>
-                </div>
+              <div class="empty-state" id="emptyState">
+                <div class="empty-icon-wrap">📄</div>
+                <p>No results yet</p>
+                <span class="empty-hint">Upload a resume and click Run CareerPilot</span>
               </div>
 
               <div class="results-list" id="resultsList"></div>
