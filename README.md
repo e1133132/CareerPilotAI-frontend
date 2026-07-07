@@ -8,7 +8,7 @@ This is a Flask frontend gateway for CareerPilot.
 - Keeps frontend and backend fully separated (no direct Python import from backend code)
 
 ## Config
-
+## python app.py
 Set values in environment variables or `config.py`:
 
 - `BACKEND_URL` (default: `http://localhost:8080`)
